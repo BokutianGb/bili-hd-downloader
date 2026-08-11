@@ -14,7 +14,7 @@ B 站网页上的"最高画质"不是打开就能下的:
 
 ## 快速开始(3 步)
 
-1. **下载**:去 [Releases](https://github.com/你的用户名/bili-hd-downloader/releases) 下载 `BiliHDDownloader_v1.0.zip`,解压到任意文件夹
+1. **下载**:去 [Releases](https://github.com/BokutianGb/bili-hd-downloader/releases) 下载 `BiliHDDownloader_v1.0.zip`,解压到任意文件夹
 2. **双击** `B站最高画质下载器.exe`
    - 首次运行会自动下载 yt-dlp 和 ffmpeg 工具(需要联网,共约 60MB,显示进度)
 3. 按界面顺序操作:
@@ -60,7 +60,7 @@ B 站网页上的"最高画质"不是打开就能下的:
 ## 从源码自己打包
 
 ```bat
-git clone https://github.com/你的用户名/bili-hd-downloader.git
+git clone https://github.com/BokutianGb/bili-hd-downloader.git
 cd bili-hd-downloader
 build.bat        # 产物: dist\B站最高画质下载器.exe
 ```
