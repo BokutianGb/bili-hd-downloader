@@ -1,30 +1,53 @@
-# B站最高画质下载器 (BiliHDDownloader)
+# B站最高画质下载器
 
-一个开箱即用的 Windows 图形化 B 站视频下载器。粘贴链接 → 点下载 → 自动以**当前账号能看到的最高画质**下载,下载完成后**自动验参**(真实帧率/帧数/编码/时长,逐帧数出来的,不是信元数据)。
+[![Stars](https://img.shields.io/github/stars/BokutianGb/bili-hd-downloader?style=flat-square&logo=github)](https://github.com/BokutianGb/bili-hd-downloader/stargazers)
+[![Release](https://img.shields.io/github/v/release/BokutianGb/bili-hd-downloader?style=flat-square)](https://github.com/BokutianGb/bili-hd-downloader/releases)
+[![Downloads](https://img.shields.io/github/downloads/BokutianGb/bili-hd-downloader/total?style=flat-square)](https://github.com/BokutianGb/bili-hd-downloader/releases)
+[![Platform](https://img.shields.io/badge/Platform-Windows_10%2F11-blue?style=flat-square)]()
+[![Python](https://img.shields.io/badge/Python-3.11-blue?style=flat-square)]()
 
-## 为什么做这个
+![B站最高画质下载器](banner.png)
 
-B 站网页上的"最高画质"不是打开就能下的:
-- 1080P+ 需要**登录**(cookie)
-- 4K/8K/杜比需要**大会员**
-- 视频流和音频流是**分开的**,必须用 ffmpeg 合并
-- 网页里的视频地址带**过期签名**,直接复制 URL 无效
+> **粘贴 B 站链接 → 自动登录态最高画质下载 → 下载后逐帧验参(真实帧数、帧率、编码)**
 
-本工具把这些全部自动化:自己抓 cookie、自己选流、自己合并、自己验证。
+一句话:你看到的最高画质,它都能下到本地。不是信网页上标的数字,是 ffprobe -count_frames 逐帧数的。
 
-## 快速开始(3 步)
+---
 
-1. **下载**:去 [Releases](https://github.com/BokutianGb/bili-hd-downloader/releases) 下载 `BiliHDDownloader_v1.0.zip`,解压到任意文件夹
-2. **双击** `B站最高画质下载器.exe`
-   - 首次运行会自动下载 yt-dlp 和 ffmpeg 工具(需要联网,共约 60MB,显示进度)
-3. 按界面顺序操作:
-   - **① 抓取/更新登录Cookie**(首次必做):会自动打开一个 Edge 窗口进入 B 站,扫码登录一次,自动抓取完成。之后约半年不用再抓
-   - **② 粘贴视频链接**
-   - **③ 选择画质档位**
-   - **④ 选择保存位置**
-   - **⑤ 开始下载**
+## 为什么你需要它
 
-下载完成后自动弹出验参结果,例如:
+打开 B 站想下载一个视频,你会发现:
+
+| 你想做的事 | 实际遇到的墙 |
+|---|---|
+| 下 1080P+ | 要登录,浏览器 F12 拷出来的链接几分钟就过期 |
+| 下 4K/8K/杜比 | 要大会议,而且视频流和音频流是分开的 |
+| 下载后剪辑/分析 | 下回来不知道真实帧率是多少,容器声明可能不准 |
+| 换个电脑再用 | 从头再来一遍,登录、找工具、调参数 |
+
+**这个工具一次性解决所有问题**:自动抓登录态、自动选最高流、自动合并、自动验参。解压 → 双击 → 两步搞定。
+
+---
+
+## 核心功能
+
+- **一键抓取登录 Cookie**:以独立调试模式启动 Edge(不碰你日常浏览器),打开 B 站,扫码登录一次自动抓取,有效期约半年
+- **三档画质按需选择**:
+  - 最高画质(大会员 4K/8K/杜比)
+  - 最高·优先 H.264(同分辨率优先 x264 编码,兼容性最好)
+  - 1080P·H.264(最兼容,无需大会员)
+- **自动音视频合并**:B 站视频流和音频流分离,yt-dlp + ffmpeg 自动下载合并为单一 mp4
+- **下载后自动逐帧验参**:调用 ffprobe -count_frames 真实数出每一帧,输出:
+  - `r_frame_rate` vs `avg_frame_rate` → 判断是恒定帧率(CFR)还是可变帧率(VFR)
+  - `nb_read_frames` 真实帧数(不是元数据声明的)
+  - 编码格式、分辨率、像素格式、音频参数
+- **工具自动更新**:yt-dlp / ffmpeg 不冻结进 exe,B 站接口变化时删掉 tools/ 目录重开即可更新
+
+---
+
+## 验参能力(这是真功夫)
+
+下载完后自动输出这样一份报告,不是糊弄人的:
 
 ```
 时长: 90.18 秒 | 大小: 150.2 MB
@@ -33,53 +56,59 @@ B 站网页上的"最高画质"不是打开就能下的:
 音频流: aac 48000Hz
 ```
 
-## 画质档位说明
+看得懂的人自然会明白这段信息的意义:
+- `r_frame_rate = avg_frame_rate` → 视频是 CFR,帧率声明可信
+- 如果两者不一致 → 视频是 VFR,任何单一帧率数字都不能信
+- `90.18 x 50 = 4509`,实测 4503,差 6 帧 → 关键帧剪切产生的物理误差,**这证明数字是真的**——如果是编的不会出现这种误差
 
-| 档位 | 能下到什么 | 适合谁 |
-|---|---|---|
-| 最高画质 | 大会员:4K/8K/杜比;登录:1080P+;未登录:480P | 追求画质,自带播放器能解 HEVC/AV1 |
-| 最高·优先H.264 | 同分辨率下优先选 H.264 编码 | 文件要喂给剪辑/老播放器 |
-| 1080P·H.264 | 锁 1080P 且用 H.264 | 最兼容,无需大会员 |
+---
 
-## 常见问题 (FAQ)
+## 快速开始
 
-| 问题 | 解决 |
+1. 前往 [Releases](https://github.com/BokutianGb/bili-hd-downloader/releases) 下载 `BiliHDDownloader_v1.0.zip`
+2. 解压到任意文件夹,双击 `B站最高画质下载器.exe`
+3. 按界面编号顺序:**
+   - **① 点"抓取/更新登录Cookie"** → 弹 Edge 窗口 → 扫码登录 B 站(只需一次,半年有效)
+   - **② 粘贴视频链接**
+   - **③ 选画质档位**
+   - **④ 选择保存目录**
+   - **⑤ 点"开始下载"**
+
+下载完成自动弹出验参结果。
+
+首次运行会自动下载 yt-dlp(视频解析引擎)和 ffmpeg(音视频合并工具),共约 60MB。
+
+---
+
+## 技术栈
+
+![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
+![Tkinter](https://img.shields.io/badge/GUI-Tkinter-FF6B6B)
+![yt-dlp](https://img.shields.io/badge/yt--dlp-2026.07-00BFFF)
+![FFmpeg](https://img.shields.io/badge/FFmpeg-7.1-007ACC?logo=ffmpeg&logoColor=white)
+![PyInstaller](https://img.shields.io/badge/PyInstaller-6.22-FF6600)
+
+| 组件 | 用途 |
 |---|---|
-| 首次打开提示下载工具失败 | 网络连不上 GitHub,把提示里的两个链接手动下载后放进 `tools` 文件夹即可 |
-| 下载报错/退出码非 0 | 删除 `tools` 文件夹,重新打开 exe(会自动下载最新 yt-dlp) |
-| 明明登录了却下不到 1080P+ | 重新点 ① 抓取 Cookie(SESSDATA 过期了,约半年有效期) |
-| 杀毒软件报毒 | PyInstaller 打包的 exe 常见误报,加入白名单即可;源码全公开可自行打包(见下) |
-| 下载的文件打不开 | 换"优先H.264"档位重下 |
+| **yt-dlp** | 解析 B 站视频流地址,支持登录态/大会员/多清晰度 |
+| **FFmpeg + FFprobe** | 合并分离的音视频流、逐帧验参 |
+| **Chrome DevTools Protocol** | 通过 Edge 远程调试端口抓取登录 Cookie |
+| **Tkinter** | 原生 GUI,零额外依赖,打包进单文件 exe |
+| **PyInstaller** | 一键打包为单文件 exe,不含运行时工具(tools 首次运行自动下载) |
 
-## 安全性说明
+---
 
-- **你的登录 Cookie 只存在你自己电脑上**(`exe 同目录/cookies.txt`),不会上传、不会进安装包、不会进 GitHub
-- 本工具**只下载视频**,不上传任何东西
-- 下载内容请遵守 B 站用户协议与相关法律法规,仅供个人学习研究
+## 安全说明
 
-## 从源码自己打包
+- **你的 B 站登录 Cookie 只存在你本机**(exe 同目录 cookies.txt),不上传、不入包、不入库
+- 本工具不上传任何数据,只做下载
+- .gitignore 三重排除 cookies.txt / tools / downloads,发布包制作脚本内置防御性检查
+- 请遵守 B 站用户协议及相关法律法规,仅用于个人学习研究
 
-```bat
-git clone https://github.com/BokutianGb/bili-hd-downloader.git
-cd bili-hd-downloader
-build.bat        # 产物: dist\B站最高画质下载器.exe
-```
+---
 
-或手动:
+**如果这个项目帮到了你,点一下 Star,让更多人看到。**
 
-```bat
-conda activate volleyball
-pip install -r requirements.txt
-pyinstaller --noconfirm --clean --onefile --windowed --name "B站最高画质下载器" main.py
-```
+---
 
-## 技术原理(给好奇的人)
-
-- **抓 Cookie**:以 `--remote-debugging-port=9222` 启动独立 Edge → CDP 协议 `Network.getAllCookies` 轮询 → 等到 `SESSDATA` 出现 → 写成 Netscape 格式供 yt-dlp 使用
-- **选流**:yt-dlp `-f bv*+ba/b`,自动挑最高清晰度视频流 + 最佳音频流,ffmpeg 合并为 mp4
-- **验参**:`ffprobe -count_frames` 逐帧数,输出**真实**帧数;对比 `r_frame_rate`(容器声明)与 `avg_frame_rate`(帧数÷时长)可判断视频是否为恒定帧率(CFR),两者不一致即为 VFR
-- **工具自更新**:yt-dlp/ffmpeg 不冻结进 exe,首次运行自动下载到 `tools/`,B 站接口变更时删掉 `tools/` 重开即更新
-
-## 免责声明
-
-本项目仅供技术学习与个人研究。请勿用于商业用途,请勿下载传播受版权保护的内容。使用者需自行承担相关责任。
+*B站最高画质下载器 - 不把时间浪费在找工具上*
