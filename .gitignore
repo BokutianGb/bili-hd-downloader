@@ -1,0 +1,21 @@
+# ===== 敏感信息: 登录凭证, 绝不入库 =====
+cookies.txt
+edge_bilibili_cookies.txt
+*_cookies.txt
+
+# ===== 运行时产物: 不入库(yt-dlp/ffmpeg 由 exe 首次运行自动下载) =====
+tools/
+downloads/
+*.part
+
+# ===== 打包产物 =====
+dist/
+build/
+*.spec
+__pycache__/
+*.pyc
+
+# ===== 临时/日志 =====
+*.log
+.idea/
+.vscode/
