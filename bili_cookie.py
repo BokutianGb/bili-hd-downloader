@@ -61,6 +61,7 @@ def start_debug_edge(log):
         [
             edge,
             f"--remote-debugging-port={CDP_PORT}",
+            "--remote-allow-origins=*",
             f"--user-data-dir={profile}",
             "--no-first-run",
             "--no-default-browser-check",
